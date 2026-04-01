@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { ThemeSwitcher } from './ThemeSwitcher'
 
 export function Header() {
   const { tier } = useParams<{ tier?: string }>()
@@ -28,6 +29,8 @@ export function Header() {
       {tier && (
         <div className="shell-header__tier-badge">{tier}</div>
       )}
+
+      <ThemeSwitcher />
     </header>
   )
 }

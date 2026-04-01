@@ -137,7 +137,7 @@ const SOCIAL_LINKS: SocialLink[] = [
 // ── Tokens (kept in sync with HTML) ──────────────────────────────────────────
 const T = {
   bg:        '#0e0e0e',
-  bgCard:    '#161616',
+  bgCard:    '#1A1A1A',
   bgRaised:  '#1e1e1e',
   border:    'rgba(255,255,255,0.07)',
   borderHi:  'rgba(255,255,255,0.16)',

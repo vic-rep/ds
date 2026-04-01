@@ -87,18 +87,19 @@ export function Sidebar() {
       <div className="sidebar-divider-label">Prototypes</div>
 
       {prototypes.map(entry => (
-        <NavLink
+        <a
           key={entry.id}
-          to={`/prototypes/${entry.id}`}
-          className={({ isActive }) =>
-            `sidebar-item${isActive ? ' sidebar-item--active' : ''}`
-          }
+          href={entry.url ?? `/prototypes/${entry.id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="sidebar-item"
         >
           {entry.status && (
             <span className={`sidebar-item__dot sidebar-item__dot--${entry.status}`} />
           )}
           {entry.name}
-        </NavLink>
+          <span style={{ marginLeft: 'auto', opacity: 0.35, fontSize: 10 }}>↗</span>
+        </a>
       ))}
 
       {prototypes.length === 0 && (
