@@ -42,6 +42,7 @@ import { FAQ } from '@/components/templates/FAQ'
 import { Footer } from '@/components/templates/Footer'
 import { Navigation } from '@/components/templates/Navigation'
 import { VehicleDetailsCard } from '@/components/templates/VehicleDetailsCard'
+import { GoogleReviews } from '@/components/templates/GoogleReviews'
 
 export type Tier =
   | 'foundation'
@@ -62,6 +63,8 @@ export interface ComponentEntry {
   props?: PropDef[]
   status?: 'stable' | 'beta' | 'deprecated' | 'wip'
   sourceFile?: string
+  url?: string
+  notes?: { title: string; body: string }[]
 }
 
 export interface VariantDef {
@@ -1114,6 +1117,55 @@ export const registry: ComponentEntry[] = [
     ],
   },
 
+  {
+    id: 'google-reviews',
+    name: 'Google Reviews',
+    tier: 'templates',
+    description: 'Testimonial section with animated 3-layer carousel and Google badge. Infinite-looping, touch-enabled, fully responsive.',
+    component: GoogleReviews as React.ComponentType<Record<string, unknown>>,
+    status: 'stable',
+    sourceFile: 'src/components/templates/GoogleReviews/index.tsx',
+    variants: [
+      {
+        label: 'Default',
+        props: {},
+        background: 'dark',
+      },
+    ],
+    props: [
+      { name: 'className', type: 'string', required: false, default: '""', description: 'Additional CSS class name' },
+    ],
+    notes: [
+      {
+        title: 'Structure',
+        body: `The component is a full-width dark section (.gr-section) containing a rounded container (.gr-container) with a topographic background and an orange radial glow.
+
+Inside the container, .gr-layout holds two columns: .gr-left (heading, Google badge, subtitle) and .gr-right (nav arrows + card carousel).
+
+The carousel lives in .gr-cards-viewport — a fixed-height drag layer. Inside it, two card slots are always rendered via absolute positioning. Each slot holds a .gr-card with one of five colour variants that cycle in strict alternation: dark cards on even indices (surface, surface-adjacent, surface-adjacent-2) and orange cards on odd indices (accent, tertiary). This guarantees one dark and one orange card are always visible together.`,
+      },
+      {
+        title: 'Animation',
+        body: `The carousel uses a conveyor-belt pattern powered by motion/react. Only two cards are ever mounted — the active card (slot 0) and the next card (slot 1). Navigation replaces the exiting card via AnimatePresence while the staying card animates to its new slot using the layout prop.
+
+Enter: card slides in from off-screen (x: ±(cardWidth + gap)) while scaling up from 0.3 and fading in.
+Exit: mirrors the enter — card scales down to 0.3, fades out, and slides off in the opposite direction.
+
+Spring config: stiffness 560 · damping 36 · mass 0.4. Scale and opacity use a 0.5 s ease curve. Drag is handled by motion's drag="x" with a 40 px / 300 px·s⁻¹ threshold to trigger navigation.`,
+      },
+      {
+        title: 'Responsive layout',
+        body: `Layout is driven by a ResizeObserver on the container, not a fixed media query. The hook computes the theoretical card width in the two-column row layout and triggers isMobile when cards would drop below 230 px.
+
+Desktop (isMobile false): two cards side by side in .gr-right.
+Mobile peek (isMobile true, CSS column ≤ 767 px): single-card peek layout — the active card fills the content width and the next card peeks 40 px at the right edge.
+Forced column (isMobile true, window > 767 px): JS applies .gr-layout--mobile, stacking heading above cards before the CSS breakpoint fires. This prevents the heading and cards from being crammed side by side at intermediate widths.
+
+In all peek modes the viewport bleeds into the right container padding so the peek card always touches the container's right edge. The left edge stays aligned with the heading text.`,
+      },
+    ],
+  },
+
   // ── Prototypes ──
   {
     id: 'car-leasing-flow',
@@ -1125,6 +1177,7 @@ export const registry: ComponentEntry[] = [
       { label: 'По подразбиране', props: {} },
     ],
     status: 'wip',
+    url: '/proto/car-leasing-flow',
   },
   {
     id: 'trusti-one-pager',
@@ -1136,6 +1189,7 @@ export const registry: ComponentEntry[] = [
       { label: 'По подразбиране', props: {} },
     ],
     status: 'wip',
+    url: '/trusti-one-pager.html',
   },
 ]
 

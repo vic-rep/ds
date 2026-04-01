@@ -195,6 +195,17 @@
   max-width: 1200px;
 }
 
+/* Template mode: full-bleed, no max-width, no outer padding */
+.preview-frame--template {
+  padding: 0;
+  max-width: none;
+}
+
+.preview-frame__meta--padded {
+  padding: var(--preview-padding);
+  max-width: 1200px;
+}
+
 .preview-frame__title-row {
   display: flex;
   align-items: center;
@@ -228,6 +239,15 @@
   color: var(--color-text-secondary);
   margin-bottom: 36px;
   line-height: 1.6;
+}
+
+.preview-frame__note-body {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  white-space: pre-line;
+  max-width: 680px;
+  margin: 12px 0 0;
 }
 
 .preview-frame__source {
@@ -298,6 +318,37 @@
   border-top: 1px solid var(--color-line);
   background: var(--color-surface);
   font-weight: 500;
+}
+
+/* ── Standalone Template Variants ── */
+.variant-standalone-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.variant-standalone {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.variant-standalone__label {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  z-index: 10;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  background: var(--color-bg);
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  padding: 3px 8px;
+  pointer-events: none;
+  opacity: 0.85;
 }
 
 /* ── Prop Table ── */
@@ -576,4 +627,53 @@
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+/* ── Theme Switcher ── */
+.theme-switcher {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  padding: 3px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.theme-switcher__btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  border: none;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+  white-space: nowrap;
+}
+
+.theme-switcher__btn:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text-primary);
+}
+
+.theme-switcher__btn--active {
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.theme-switcher__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--mode-accent, #F76803);
+  flex-shrink: 0;
 }
