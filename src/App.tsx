@@ -1,0 +1,34 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { Sidebar } from './shell/Sidebar'
+import { Header } from './shell/Header'
+import { PreviewFrame } from './shell/PreviewFrame'
+import { ColorsPage } from './sections/foundation/Colors'
+import { TypographyPage } from './sections/foundation/Typography'
+import { SpacingPage } from './sections/foundation/Spacing'
+import { TokensPage } from './sections/foundation/Tokens'
+import { IconsPage } from './sections/foundation/Icons'
+import { HomePage } from './sections/HomePage'
+import './styles/layout.css'
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <div className="app-shell">
+        <Header />
+        <Sidebar />
+        <main className="shell-main">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/foundation/colors" element={<ColorsPage />} />
+            <Route path="/foundation/typography" element={<TypographyPage />} />
+            <Route path="/foundation/spacing" element={<SpacingPage />} />
+            <Route path="/foundation/tokens" element={<TokensPage />} />
+            <Route path="/foundation/icons" element={<IconsPage />} />
+            <Route path="/:tier/:id" element={<PreviewFrame />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </main>
+      </div>
+    </BrowserRouter>
+  )
+}

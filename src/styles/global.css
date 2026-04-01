@@ -1,0 +1,64 @@
+/* Import Design System tokens — must come before @tailwind directives */
+@import '../../../../Design-system/src/styles/tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* ── Shell UI Variables ── */
+  --color-brand-primary: #F76803;
+  --color-brand-dark: #1A1A1A;
+  --color-brand-accent: #E8832A;
+
+  --color-bg: #FFFFFF;
+  --color-surface: #FAFAFA;
+  --color-surface-hover: #F5F5F5;
+
+  --color-line: #E8E8E8;
+  --color-line-strong: #D0D0D0;
+
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #6B6B6B;
+  --color-text-muted: #A0A0A0;
+
+  --color-status-stable: #22C55E;
+  --color-status-beta: #F5A623;
+  --color-status-wip: #A0A0A0;
+  --color-status-deprecated: #EF4444;
+
+  --sidebar-width: 240px;
+  --header-height: 56px;
+  --preview-padding: 48px;
+
+  --font-ui: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'DM Mono', 'Fira Code', monospace;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--color-text-primary);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
