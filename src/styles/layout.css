@@ -324,20 +324,32 @@
 .variant-standalone-list {
   display: flex;
   flex-direction: column;
+  gap: 48px;
+  padding: 32px 12px 64px;   /* narrow side padding so template cards get max width */
 }
 
+/* Global toolbar: viewport switcher for all variants */
+.variant-standalone-list__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: -24px; /* pulls it visually closer to first variant */
+}
+
+/* ── Standalone variant shell ──────────────────────────────────────────────── */
+
 .variant-standalone {
-  position: relative;
-  max-width: 1200px;
-  margin: 0 auto;
   width: 100%;
 }
 
+/* ── Variant toolbar: label only (switcher moved to list level) ──────────────── */
+
+.variant-standalone__toolbar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
 .variant-standalone__label {
-  position: absolute;
-  top: 12px;
-  left: 16px;
-  z-index: 10;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -347,9 +359,79 @@
   border: 1px solid var(--color-line);
   border-radius: 6px;
   padding: 3px 8px;
-  pointer-events: none;
-  opacity: 0.85;
 }
+
+/* ── Viewport switcher ─────────────────────────────────────────────────────── */
+
+.viewport-switcher {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.viewport-switcher__btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  color: var(--color-text-muted);
+  transition: background 120ms ease, color 120ms ease;
+  white-space: nowrap;
+}
+
+.viewport-switcher__btn:hover {
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+}
+
+.viewport-switcher__btn--active {
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.viewport-switcher__btn i {
+  font-size: 11px;
+}
+
+.viewport-switcher__size {
+  font-size: 10px;
+  opacity: 0.55;
+  font-weight: 400;
+}
+
+/* ── Viewport frame wrapper ────────────────────────────────────────────────── */
+
+.variant-viewport {
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-md, 8px);
+  transition: max-width 220ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* center the constrained frame */
+.variant-viewport--mobile,
+.variant-viewport--tablet {
+  margin: 0 auto;
+  box-shadow: 0 0 0 1px var(--color-line), 0 4px 24px rgba(0,0,0,0.08);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.variant-viewport--mobile  { max-width: 375px; }
+.variant-viewport--tablet  { max-width: 768px; }
+.variant-viewport--desktop { max-width: none; }
 
 /* ── Prop Table ── */
 .prop-table {

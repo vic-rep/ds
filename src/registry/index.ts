@@ -1092,28 +1092,69 @@ export const registry: ComponentEntry[] = [
     id: 'vehicle-details-card',
     name: 'Vehicle Details Card',
     tier: 'templates',
-    description: 'Summary card showing vehicle make, model, year, plate, talon number, and verification badge.',
+    description: 'Vehicle check card with two states: unauthenticated (locked services + talon input) and authenticated (vehicle info + live service statuses).',
     component: VehicleDetailsCard as React.ComponentType<Record<string, unknown>>,
     status: 'stable',
     sourceFile: 'src/components/templates/VehicleDetailsCard/index.tsx',
     variants: [
       {
-        label: 'Default',
+        label: 'No talon (default)',
         props: {
-          vehicle: { make: 'Toyota', model: 'Corolla', year: 2021, plate: 'CB 1234 AB', talonNumber: 'T-88271', verified: true },
+          talon: false,
+          vehicle: { make: 'BMW', model: '3 Series', year: 2016, plate: 'EA 1234 CB', fuel: 'Дизел', engine: '2.0 л.', power: '190 кс.', drive: 'Десен' },
+          onTalonSubmit: () => {},
         },
       },
       {
-        label: 'Unverified',
+        label: 'No talon — format error',
         props: {
-          vehicle: { make: 'BMW', model: '3 Series', year: 2019, plate: 'E 5678 CD' },
-          onEdit: () => {},
+          talon: false,
+          vehicle: { make: 'BMW', model: '3 Series', year: 2016, plate: 'EA 1234 CB', fuel: 'Дизел', engine: '2.0 л.', power: '190 кс.', drive: 'Десен' },
+          talonError: 'invalid-format',
+          onTalonSubmit: () => {},
+        },
+      },
+      {
+        label: 'No talon — plate mismatch',
+        props: {
+          talon: false,
+          vehicle: { make: 'BMW', model: '3 Series', year: 2016, plate: 'EA 1234 CB', fuel: 'Дизел', engine: '2.0 л.', power: '190 кс.', drive: 'Десен' },
+          talonError: 'plate-mismatch',
+          onTalonSubmit: () => {},
+        },
+      },
+      {
+        label: 'With talon — loading',
+        props: {
+          talon: true,
+          loading: true,
+          vehicle: { make: 'BMW', model: '3 Series', year: 2016, plate: 'EA 1234 CB', fuel: 'Дизел', engine: '2.0 л.', power: '190 кс.', drive: 'Десен', isTaxi: false, isLeasing: true },
+          onTalonSubmit: () => {},
+        },
+      },
+      {
+        label: 'With talon — statuses',
+        props: {
+          talon: true,
+          vehicle: { make: 'BMW', model: '3 Series', year: 2016, plate: 'EA 1234 CB', fuel: 'Дизел', engine: '2.0 л.', power: '190 кс.', drive: 'Десен', isTaxi: false, isLeasing: true },
+          services: [
+            { id: 'civil-liability', label: 'Гражданска отговорност', status: 'valid',   href: '#civil-liability' },
+            { id: 'kasko',           label: 'Каско',                  status: 'locked' },
+            { id: 'vignette',        label: 'Винетка',                status: 'expired', href: '#vignette' },
+            { id: 'fines',           label: 'Глоби',                  status: 'warning', href: '#fines' },
+            { id: 'reverse-leasing', label: 'Обратен лизинг',         status: 'valid',   href: '#leasing' },
+          ],
+          onTalonSubmit: () => {},
         },
       },
     ],
     props: [
-      { name: 'vehicle', type: 'VehicleDetails', required: true, description: '{ make, model, year, plate?, talonNumber?, verified? }' },
-      { name: 'onEdit', type: '() => void', required: false, description: 'Edit button click handler' },
+      { name: 'vehicle',       type: 'VehicleDetails',    required: true,  description: '{ make, model, year, plate, fuel?, engine?, power?, drive?, isTaxi?, isLeasing? }' },
+      { name: 'talon',         type: 'boolean',           required: true,  description: 'Authenticated state — true shows vehicle info + service statuses' },
+      { name: 'services',      type: 'VehicleService[]',  required: false, description: 'Array of services with statuses — undefined triggers skeleton loading' },
+      { name: 'onTalonSubmit', type: '(t: string) => void', required: true, description: 'Called when the user submits the talon input' },
+      { name: 'talonError',    type: "'invalid-format' | 'plate-mismatch' | null", required: false, description: 'Validation error to show under the talon input' },
+      { name: 'loading',       type: 'boolean',           required: false, default: 'false', description: 'Shows skeleton rows while service statuses are loading' },
     ],
   },
 
