@@ -1,112 +1,115 @@
-import { useState } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
-import { registry, type Tier } from '../registry'
+import { useState, useCallback } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { AppNav, type NavItem } from '@/components/templates/AppNav'
+import { registry } from '../registry'
 
-const TIERS: { tier: Tier; label: string }[] = [
-  { tier: 'foundation', label: 'Atoms' },
-  { tier: 'atoms', label: 'Atoms' },
-  { tier: 'molecules', label: 'Molecules' },
-  { tier: 'organisms', label: 'Organisms' },
-  { tier: 'templates', label: 'Templates' },
-  { tier: 'pages', label: 'Pages' },
+/* ── Nav item definitions ──────────────────────────────────────────────── */
+
+const FOUNDATION_CHILDREN = [
+  { id: 'foundation/colors',     label: 'Colors' },
+  { id: 'foundation/typography', label: 'Typography' },
+  { id: 'foundation/spacing',    label: 'Spacing' },
+  { id: 'foundation/tokens',     label: 'Tokens' },
+  { id: 'foundation/icons',      label: 'Icons' },
 ]
 
-const FOUNDATION_LINKS = [
-  { id: 'colors', name: 'Colors' },
-  { id: 'typography', name: 'Typography' },
-  { id: 'spacing', name: 'Spacing' },
-  { id: 'tokens', name: 'Tokens' },
-  { id: 'icons', name: 'Icons' },
-]
+const TIER_CONFIG = [
+  { tier: 'molecules', label: 'Molecules', icon: 'fa-cubes' },
+  { tier: 'organisms', label: 'Organisms', icon: 'fa-sitemap' },
+  { tier: 'templates', label: 'Templates', icon: 'fa-table-columns' },
+  { tier: 'pages',     label: 'Pages',     icon: 'fa-file-lines' },
+] as const
 
-function TierGroup({ tier, label }: { tier: Tier; label: string }) {
-  const location = useLocation()
-  const items = tier === 'foundation' ? null : registry.filter(c => c.tier === tier)
-  const foundationItems = tier === 'foundation' ? FOUNDATION_LINKS : null
+function buildNavItems(): NavItem[] {
+  const items: NavItem[] = [
+    {
+      id: 'atoms',
+      label: 'Atoms',
+      icon: 'fa-atom',
+      children: FOUNDATION_CHILDREN,
+    },
+  ]
 
-  const isActive = location.pathname.startsWith(`/${tier}/`)
-  const [open, setOpen] = useState(isActive || tier === 'foundation' || tier === 'atoms' || tier === 'molecules')
+  for (const { tier, label, icon } of TIER_CONFIG) {
+    const entries = registry.filter(e => e.tier === tier)
+    if (entries.length === 0) continue
+    items.push({
+      id: tier,
+      label,
+      icon,
+      children: entries.map(e => ({ id: `${tier}/${e.id}`, label: e.name })),
+    })
+  }
 
-  const count = items?.length ?? foundationItems?.length ?? 0
-  if (count === 0 && tier !== 'foundation') return null
-
-  return (
-    <div className="sidebar-group">
-      <button className="sidebar-group__header" onClick={() => setOpen(o => !o)}>
-        <span>{label}</span>
-        <span className={`sidebar-group__chevron ${open ? 'sidebar-group__chevron--open' : ''}`}>
-          ▼
-        </span>
-      </button>
-
-      {open && (
-        <div className="sidebar-group__items">
-          {tier === 'foundation' && foundationItems!.map(item => (
-            <NavLink
-              key={item.id}
-              to={`/foundation/${item.id}`}
-              className={({ isActive }) =>
-                `sidebar-item${isActive ? ' sidebar-item--active' : ''}`
-              }
-            >
-              {item.name}
-            </NavLink>
-          ))}
-
-          {tier !== 'foundation' && items!.map(entry => (
-            <NavLink
-              key={entry.id}
-              to={`/${entry.tier}/${entry.id}`}
-              className={({ isActive }) =>
-                `sidebar-item${isActive ? ' sidebar-item--active' : ''}`
-              }
-            >
-              {entry.status && (
-                <span className={`sidebar-item__dot sidebar-item__dot--${entry.status}`} />
-              )}
-              {entry.name}
-            </NavLink>
-          ))}
-        </div>
-      )}
-    </div>
-  )
+  return items
 }
 
+const NAV_ITEMS = buildNavItems()
+
+/* ── Sidebar ───────────────────────────────────────────────────────────── */
+
 export function Sidebar() {
+  const navigate = useNavigate()
   const location = useLocation()
-  const prototypes = registry.filter(c => c.tier === 'prototypes')
+  const [collapsed, setCollapsed] = useState(false)
+
+  // Derive active child id from current path: "/foundation/colors" → "foundation/colors"
+  const activeId = location.pathname.replace(/^\//, '') || undefined
+
+  const handleNavigate = useCallback((id: string) => {
+    if (collapsed) {
+      setCollapsed(false)
+      return
+    }
+    navigate(`/${id}`)
+  }, [navigate, collapsed])
+
+  const prototypes = registry.filter(e => e.tier === 'prototypes')
 
   return (
-    <nav className="shell-sidebar">
-      {TIERS.map(({ tier, label }) => (
-        <TierGroup key={tier} tier={tier} label={label} />
-      ))}
+    <nav className={`shell-sidebar${collapsed ? ' shell-sidebar--collapsed' : ''}`}>
 
-      <hr className="sidebar-divider" />
-      <div className="sidebar-divider-label">Prototypes</div>
+      {/* Scrollable nav area */}
+      <div className="shell-sidebar__scroll">
+        <AppNav
+          items={NAV_ITEMS}
+          activeId={activeId}
+          sectionLabel="MENU"
+          defaultOpenIds={['atoms', 'molecules', 'templates']}
+          onNavigate={handleNavigate}
+          collapsed={collapsed}
+        />
 
-      {prototypes.map(entry => (
-        <a
-          key={entry.id}
-          href={entry.url ?? `/prototypes/${entry.id}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="sidebar-item"
-        >
-          {entry.status && (
-            <span className={`sidebar-item__dot sidebar-item__dot--${entry.status}`} />
-          )}
-          {entry.name}
-          <span style={{ marginLeft: 'auto', opacity: 0.35, fontSize: 10 }}>↗</span>
-        </a>
-      ))}
+        {!collapsed && (
+          <>
+            <hr className="sidebar-divider" />
+            <div className="sidebar-divider-label">Prototypes</div>
+            {prototypes.map(entry => (
+              <a
+                key={entry.id}
+                href={entry.url ?? `/proto/${entry.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="sidebar-item"
+              >
+                {entry.name}
+                <span style={{ marginLeft: 'auto', opacity: 0.35, fontSize: 10 }}>↗</span>
+              </a>
+            ))}
+          </>
+        )}
+      </div>
 
-      {prototypes.length === 0 && (
-        <div style={{ padding: '6px 20px', fontSize: 12, color: 'var(--color-text-muted)' }}>
-          No prototypes yet
-        </div>
-      )}
+      {/* Collapse toggle pinned to bottom */}
+      <button
+        className="shell-sidebar__collapse-btn"
+        onClick={() => setCollapsed(c => !c)}
+        title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+      >
+        <i className={`fa-regular fa-chevron-${collapsed ? 'right' : 'left'}`} />
+        {!collapsed && <span>Collapse</span>}
+      </button>
+
     </nav>
   )
 }

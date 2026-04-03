@@ -43,6 +43,7 @@ import { Footer } from '@/components/templates/Footer'
 import { Navigation } from '@/components/templates/Navigation'
 import { VehicleDetailsCard } from '@/components/templates/VehicleDetailsCard'
 import { GoogleReviews } from '@/components/templates/GoogleReviews'
+import { AppNav } from '@/components/templates/AppNav'
 
 export type Tier =
   | 'foundation'
@@ -1179,31 +1180,120 @@ export const registry: ComponentEntry[] = [
     notes: [
       {
         title: 'Structure',
-        body: `The component is a full-width dark section (.gr-section) containing a rounded container (.gr-container) with a topographic background and an orange radial glow.
+        body: `DOM tree: section.gr-section > div.gr-container > div.gr-layout > [div.gr-left | div.gr-right > nav.gr-arrows + div.gr-cards-viewport > 2× motion.div > ReviewCard]
 
-Inside the container, .gr-layout holds two columns: .gr-left (heading, Google badge, subtitle) and .gr-right (nav arrows + card carousel).
+Exactly 2 card slots are always rendered — no more, no less. Each slot is absolutely positioned inside the viewport at left: slot * (cardWidth + gap). Slot 0 is the active card, slot 1 is the next/peek card.
 
-The carousel lives in .gr-cards-viewport — a fixed-height drag layer. Inside it, two card slots are always rendered via absolute positioning. Each slot holds a .gr-card with one of five colour variants that cycle in strict alternation: dark cards on even indices (surface, surface-adjacent, surface-adjacent-2) and orange cards on odd indices (accent, tertiary). This guarantees one dark and one orange card are always visible together.`,
+Card colour cycling: each card gets one of 5 variants based on its absolute index in the reviews array (not its visible position). Even index → dark neutral (surface, surface-adjacent, surface-adjacent-2, cycling). Odd index → orange (accent, tertiary, cycling). This guarantees strict dark/orange alternation and prevents colours from flickering when navigating.`,
       },
       {
         title: 'Animation',
-        body: `The carousel uses a conveyor-belt pattern powered by motion/react. Only two cards are ever mounted — the active card (slot 0) and the next card (slot 1). Navigation replaces the exiting card via AnimatePresence while the staying card animates to its new slot using the layout prop.
+        body: `Powered by motion/react. AnimatePresence mounts/unmounts cards as startIdx changes; the layout prop handles position changes for the card that stays.
 
-Enter: card slides in from off-screen (x: ±(cardWidth + gap)) while scaling up from 0.3 and fading in.
-Exit: mirrors the enter — card scales down to 0.3, fades out, and slides off in the opposite direction.
+Enter: card starts off-screen (x: +(cardWidth + gap) going forward, x: -(cardWidth + gap) going back), scale: 0.3, opacity: 0 → animates to x: 0, scale: 1, opacity: 1.
+Exit: mirrors enter — slides to the opposite side, shrinks to scale: 0.3, fades to opacity: 0.
 
-Spring config: stiffness 560 · damping 36 · mass 0.4. Scale and opacity use a 0.5 s ease curve. Drag is handled by motion's drag="x" with a 40 px / 300 px·s⁻¹ threshold to trigger navigation.`,
+Transitions: x uses a spring (stiffness: 560, damping: 36, mass: 0.4) — snappy with a slight bounce. scale and opacity use a cubic-bezier ease over 0.5 s. layout (card resize on viewport change) uses the same spring as x.
+
+Drag-to-swipe: the viewport is a motion.div with drag="x", dragConstraints: { left: 0, right: 0 } (snaps back), dragElastic: 0.06 (minimal rubber-band). onDragEnd triggers navigation if offset > 40 px or velocity > 300 px/s; otherwise the card snaps back.`,
       },
       {
         title: 'Responsive layout',
-        body: `Layout is driven by a ResizeObserver on the container, not a fixed media query. The hook computes the theoretical card width in the two-column row layout and triggers isMobile when cards would drop below 230 px.
+        body: `Layout is driven by useCarouselLayout — a custom hook that measures the container via ResizeObserver and computes cardWidth, isMobile, and forceColumn. No fixed media query is used for the JS logic.
 
-Desktop (isMobile false): two cards side by side in .gr-right.
-Mobile peek (isMobile true, CSS column ≤ 767 px): single-card peek layout — the active card fills the content width and the next card peeks 40 px at the right edge.
-Forced column (isMobile true, window > 767 px): JS applies .gr-layout--mobile, stacking heading above cards before the CSS breakpoint fires. This prevents the heading and cards from being crammed side by side at intermediate widths.
+Three modes:
+• Desktop 2-up (isMobile false): cardWidth = (grRightWidth − gap) / 2
+• Forced column (isMobile true, window > 767 px): JS adds .gr-layout--mobile to stack heading above cards before the CSS breakpoint fires. cardWidth = containerWidth − PADDING_D − gap − peek
+• CSS mobile (window ≤ 767 px): cardWidth = containerWidth − PADDING_M − gap − peek
 
-In all peek modes the viewport bleeds into the right container padding so the peek card always touches the container's right edge. The left edge stays aligned with the heading text.`,
+Peek = 40 px intentional sliver of the next card visible at the right edge, giving a scroll hint on mobile.
+
+In all peek modes the viewport gets overflow: visible and width: calc(100% + padding) to bleed into the container's right padding. The container's overflow: hidden clips it at the outer edge. The left edge always stays aligned with the heading text above.`,
       },
+      {
+        title: 'CSS details',
+        body: `Background: dark #191919 base + radial-gradient orange glow (ellipse at 50% 120%, rgba(247,104,3,0.15)) + a topo texture PNG at full cover. A ::before pseudo-element with rgba(25,25,25,0.6) dims the texture to the right opacity without affecting the gradient.
+
+Fixed height: both .gr-card and .gr-cards-viewport are hard-coded to 373 px so all cards are the same height regardless of text length. The text area (.gr-card-text) is a fixed 219 px with overflow: hidden.
+
+Dark context override: the container sets --surface, --surface-adjacent, --surface-adjacent-2 as local CSS variables so card backgrounds are always visible against #191919 regardless of the active theme.`,
+      },
+    ],
+  },
+
+  // ── AppNav ──
+  {
+    id: 'app-nav',
+    name: 'App Nav',
+    tier: 'templates',
+    description: 'Collapsible sidebar navigation with icons, badges, nesting indicator, and active state.',
+    component: AppNav as React.ComponentType<Record<string, unknown>>,
+    status: 'stable',
+    sourceFile: 'src/components/templates/AppNav/index.tsx',
+    standalone: true,
+    variants: [
+      {
+        label: 'Default — Dashboard expanded',
+        background: 'light',
+        props: {
+          sectionLabel: 'NAVIGATE',
+          activeId: 'integrations',
+          defaultOpenIds: ['dashboard'],
+          items: [
+            {
+              id: 'dashboard',
+              label: 'Dashboard',
+              icon: 'fa-browser',
+              children: [
+                { id: 'orders',   label: 'Orders',   badge: 5 },
+                { id: 'payments', label: 'Payments' },
+                { id: 'returns',  label: 'Returns' },
+              ],
+            },
+            { id: 'insights',      label: 'Insights',      icon: 'fa-robot',    href: '#insights' },
+            { id: 'messages',      label: 'Messages',      icon: 'fa-message',  badge: 236, href: '#messages' },
+            { id: 'teams',         label: 'Teams',         icon: 'fa-user-group', href: '#teams' },
+            { id: 'integrations',  label: 'Integrations',  icon: 'fa-infinity', href: '#integrations' },
+            { id: 'documentation', label: 'Documentation', icon: 'fa-book-open', href: '#docs' },
+          ],
+          onNavigate: () => {},
+        },
+      },
+      {
+        label: 'All collapsed',
+        background: 'light',
+        props: {
+          sectionLabel: 'NAVIGATE',
+          activeId: 'dashboard',
+          defaultOpenIds: [],
+          items: [
+            {
+              id: 'dashboard',
+              label: 'Dashboard',
+              icon: 'fa-browser',
+              children: [
+                { id: 'orders',   label: 'Orders',   badge: 5 },
+                { id: 'payments', label: 'Payments' },
+                { id: 'returns',  label: 'Returns' },
+              ],
+            },
+            { id: 'insights',      label: 'Insights',      icon: 'fa-robot',    href: '#insights' },
+            { id: 'messages',      label: 'Messages',      icon: 'fa-message',  badge: 236, href: '#messages' },
+            { id: 'teams',         label: 'Teams',         icon: 'fa-user-group', href: '#teams' },
+            { id: 'integrations',  label: 'Integrations',  icon: 'fa-infinity', href: '#integrations' },
+            { id: 'documentation', label: 'Documentation', icon: 'fa-book-open', href: '#docs' },
+          ],
+          onNavigate: () => {},
+        },
+      },
+    ],
+    props: [
+      { name: 'items',          type: 'NavItem[]',  required: true,  description: 'Navigation items. Items with children are collapsible.' },
+      { name: 'activeId',       type: 'string',     required: false, description: 'Currently highlighted item id.' },
+      { name: 'sectionLabel',   type: 'string',     required: false, description: 'Section header label, e.g. "NAVIGATE".' },
+      { name: 'defaultOpenIds', type: 'string[]',   required: false, default: '[]', description: 'Item ids that start expanded.' },
+      { name: 'onNavigate',     type: '(id: string) => void', required: false, description: 'Called when a leaf item is clicked.' },
+      { name: 'className',      type: 'string',     required: false, description: 'Extra CSS class on the nav element.' },
     ],
   },
 

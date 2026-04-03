@@ -14,7 +14,7 @@ export function Header() {
         onClick={() => navigate('/')}
         style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}
       >
-        <img src="/trusti-fav.png" alt="Trusti" style={{ height: 28, width: 'auto' }} />
+        <img src="/trusti-ds-logo.svg" alt="Trusti" style={{ height: 28, width: 'auto' }} />
         <span className="shell-header__logo-text">Trusti DS</span>
       </div>
 

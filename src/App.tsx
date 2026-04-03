@@ -27,6 +27,7 @@ export default function App() {
         <Route path="*" element={
           <div className="app-shell">
             <Header />
+            <div className="shell-body">
             <Sidebar />
             <main className="shell-main">
               <Routes>
@@ -40,6 +41,7 @@ export default function App() {
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </main>
+            </div>
           </div>
         } />
       </Routes>
